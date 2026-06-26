@@ -11,8 +11,8 @@ app.use(express.json());
 
 // Listado de productos en memoria para el examen
 let productos = [
-    { id: 1, nombre: "Teclado Mecánico", precio: 59.99 },
-    { id: 2, nombre: "Ratón Gaming", precio: 29.99 }
+    { id: 1, nombre: "Viñas viejas de Bobal", precio: 29.99 },
+    { id: 2, nombre: "Rosa de Murviedro", precio: 24.99 }
 ];
 
 // Ruta para obtener los productos (GET)
