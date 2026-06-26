@@ -1,61 +1,42 @@
-import { useState, useEffect } from 'react';
+import express from 'express';
+import cors from 'cors';
 
-function App() {
-  // CREACIÓN DE ESTADOS
-  // Empezamos con un array vacío.
-  const [productos, setProductos] = useState([]);
-  
-  // 'nombre' y 'precio' guardarán lo que el usuario escriba en las cajas de texto del formulario.
-  const [nombre, setNombre] = useState('');
-  const [precio, setPrecio] = useState('');
+const app = express();
 
+// Permitir peticiones desde cualquier origen (como Netlify)
+app.use(cors());
 
-  // Extraemos la URL de Render guardada en el archivo .env
-  const API_URL = import.meta.env.VITE_API_URL;
+// Permitir que el servidor entienda datos en formato JSON
+app.use(express.json());
 
-  // FUNCIÓN PARA LLAMAR A LA API (GET)
-  const pedirProductos = async () => {
-    // Hacemos la petición web a la API
-    const respuesta = await fetch(`${API_URL}/api/productos`);
-    // Convertimos la respuesta cruda en un objeto JSON
-    const datos = await respuesta.json();
-    // Guardamos esos datos en el estado 'productos' para React
-    setProductos(datos);
-  };
+// Listado de productos en memoria para el examen
+let productos = [
+    { id: 1, nombre: "Teclado Mecánico", precio: 59.99 },
+    { id: 2, nombre: "Ratón Gaming", precio: 29.99 }
+];
 
-  // EJECUCIÓN AUTOMÁTICA (useEffect)
-  useEffect(() => {
-    pedirProductos();
-  }, []);
+// Ruta para obtener los productos (GET)
+app.get('/api/productos', (req, res) => {
+    res.json(productos);
+});
 
-  // FUNCIÓN PARA ENVIAR EL FORMULARIO (POST)
-  // Esta función se activa cuando el usuario pulsa el botón "Guardar"
-  const guardarProducto = async (e) => {
-  // Evitamos que la página web se recargue por completo al pulsar el botón
-    e.preventDefault();
+// Ruta para añadir un producto (POST)
+app.post('/api/productos', (req, res) => {
+    const { nombre, precio } = req.body;
 
-    // Enviamos los datos del nuevo producto hacia la API
-    await fetch(`${API_URL}/api/productos`, {
-      method: 'POST', // Especificamos que es una petición de envío
-      headers: { 'Content-Type': 'application/json' }, // Decimos que enviamos texto tipo JSON
-      body: JSON.stringify({ nombre, precio }) // Convertimos las variables en un texto JSON
-    });
+    const nuevoProducto = {
+        id: productos.length > 0 ? productos[productos.length - 1].id + 1 : 1,
+        nombre: nombre,
+        precio: Number(precio)
+    };
 
-    // Limpiamos las cajas de texto del formulario para que queden vacías
-    setNombre('');
-    setPrecio('');
+    productos.push(nuevoProducto);
+    res.status(201).json(nuevoProducto);
+});
 
-    // Volvemos a pedir los productos para que la lista se actualice en la pantalla
-    pedirProductos();
-  };
+// Configurar el puerto automático o usar el 3000
+const PORT = process.env.PORT || 3000;
 
- 
-  return (
-    <div>
-      <h1>Listado de Productos</h1>
-
-      {/* FORMULARIO PARA AÑADIR PRODUCTOS */}
-      <form onSubmit={guardarProducto}>
-        {/* Input para el Nombre. 'onChange' guarda lo que tecleas en la variable 'nombre' */}
-        <input 
-          type="text"
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
+});
